@@ -1,10 +1,11 @@
 package route
 
 import (
+	"golang/internal/handlers"
 	"net/http"
+
 	"golang/internal/repository"
 	"golang/internal/service"
-	"golang/internal/handlers"
 )
 
 func NewRouter() http.Handler {
@@ -15,12 +16,23 @@ func NewRouter() http.Handler {
 	})
 
 	repo := repository.NewUserRepository()
-	service := service.NewUserService(repo)
-	handler := handlers.NewUserHandler(service)
+	userService := service.NewUserService(repo)
+	handler := handlers.NewUserHandler(userService)
 
-	mux.HandleFunc("/users", handler.GetUserHandler)
-	mux.HandleFunc("/users/create", handler.CreateUserHandler)
-	mux.HandleFunc("/users/search", handler.SearchUserHandler)
+	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			if r.URL.Query().Get("search") != "" || r.URL.Query().Get("keyword") != "" {
+				handler.SearchUserHandler(w, r)
+				return
+			}
+			handler.GetUserHandler(w, r)
+		case http.MethodPost:
+			handler.CreateUserHandler(w, r)
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	return mux
 }
