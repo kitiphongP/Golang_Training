@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"golang/internal/models"
-	"golang/internal/service"
+	"golang/internal/core/models"
+	"golang/internal/core/service"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

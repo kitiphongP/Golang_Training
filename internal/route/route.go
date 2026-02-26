@@ -1,11 +1,11 @@
 package route
 
 import (
-	"golang/internal/handlers"
+	"golang/internal/adapter/fiber/handlers"
 	"net/http"
 
-	"golang/internal/repository"
-	"golang/internal/service"
+	"golang/internal/core/repository"
+	"golang/internal/core/service"
 )
 
 func NewRouter() http.Handler {
@@ -33,6 +33,9 @@ func NewRouter() http.Handler {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+
+	mux.HandleFunc("/github/skills", handlers.GetuserSkillHandler)
+	mux.HandleFunc("/github/languages", handlers.GetUserLanguagesHandler)
 
 	return mux
 }

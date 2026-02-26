@@ -5,7 +5,7 @@ import (
 	"golang/internal/route"
 	"net/http"
 
-	"golang/internal/database"
+	"golang/internal/adapter/storage/database"
 )
 
 func main() {

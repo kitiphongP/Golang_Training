@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 	"time"
-	"golang/internal/models"
+	"golang/internal/core/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang/internal/database"
+	"golang/internal/adapter/storage/database"
 )
 
 type UserRepository struct {

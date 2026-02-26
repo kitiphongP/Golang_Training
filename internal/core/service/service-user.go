@@ -1,8 +1,8 @@
 package service
 
 import (
-	"golang/internal/models"
-	"golang/internal/repository"
+	"golang/internal/core/models"
+	"golang/internal/core/repository"
 )
 type UserService struct {
 	Repo *repository.UserRepository
