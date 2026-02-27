@@ -10,36 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"golang/internal/core/models"
+	
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-type Repo struct {
-	Name 		string 	`json:"name"`
-	Language 	string 	`json:"language"`
-}
-
-type GitHubUser struct {
-	Login string `json:"login"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-type GitHubLanguageReport struct {
-	Username  string         `json:"username"`
-	Name      string         `json:"name"`
-	Email     string         `json:"email"`
-	Repos     []Repo         `json:"repos"`
-	Languages map[string]int `json:"languages"`
-	UpdatedAt time.Time      `json:"updated_at" bson:"updated_at"`
-}
-
-type githubUserSearchResponse struct {
-	Items []struct {
-		Login string `json:"login"`
-	} `json:"items"`
-}
 
 func githubCollection() *mongo.Collection {
 	if database.DB == nil {
@@ -48,13 +24,13 @@ func githubCollection() *mongo.Collection {
 	return database.DB.Collection("usergithub")
 }
 
-func normalizeGitHubLanguageReport(report *GitHubLanguageReport) *GitHubLanguageReport {
+func normalizeGitHubLanguageReport(report *models.GitHubLanguageReport) *models.GitHubLanguageReport {
 	if report == nil {
 		return nil
 	}
 
 	if report.Repos == nil {
-		report.Repos = []Repo{}
+		report.Repos = []models.Repo{}
 	}
 
 	if report.Languages == nil || len(report.Languages) == 0 {
@@ -68,7 +44,7 @@ func normalizeGitHubLanguageReport(report *GitHubLanguageReport) *GitHubLanguage
 	return report
 }
 
-func findGitHubReportFromDB(filter bson.M) (*GitHubLanguageReport, error) {
+func findGitHubReportFromDB(filter bson.M) (*models.GitHubLanguageReport, error) {
 	collection := githubCollection()
 	if collection == nil {
 		return nil, fmt.Errorf("mongodb is not connected")
@@ -77,7 +53,7 @@ func findGitHubReportFromDB(filter bson.M) (*GitHubLanguageReport, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var report GitHubLanguageReport
+	var report models.GitHubLanguageReport
 	err := collection.FindOne(ctx, filter).Decode(&report)
 	if err != nil {
 		return nil, err
@@ -86,7 +62,7 @@ func findGitHubReportFromDB(filter bson.M) (*GitHubLanguageReport, error) {
 	return normalizeGitHubLanguageReport(&report), nil
 }
 
-func saveGitHubReportToDB(report *GitHubLanguageReport) error {
+func saveGitHubReportToDB(report *models.GitHubLanguageReport) error {
 	collection := githubCollection()
 	if collection == nil {
 		return fmt.Errorf("mongodb is not connected")
@@ -104,7 +80,7 @@ func saveGitHubReportToDB(report *GitHubLanguageReport) error {
 }
 
 // ฟังก์ชันสำหรับดึงข้อมูล repos ของผู้ใช้จาก GitHub API
-func FetchGitHubRepos(username string) ([]Repo, error) {
+func FetchGitHubRepos(username string) ([]models.Repo, error) {
 	if username == "" {
 		return nil, fmt.Errorf("username is required")
 	}
@@ -126,7 +102,7 @@ func FetchGitHubRepos(username string) ([]Repo, error) {
 	}
 
 	// ตัวแปรสำหรับเก็บข้อมูล repos ที่ได้รับจาก API
-	var repos []Repo
+	var repos []models.Repo
 
 	// แปลงข้อมูล JSON ที่ได้รับจาก API เป็น struct Repo
 	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
@@ -146,7 +122,7 @@ func GetGitHubLanguageSummary(username string) (map[string]int, error) {
 	return AnalyzeSkills(repos), nil
 }
 
-func FetchGitHubUser(username string) (*GitHubUser, error) {
+func FetchGitHubUser(username string) (*models.GitHubUser, error) {
 	if username == "" {
 		return nil, fmt.Errorf("username is required")
 	}
@@ -162,7 +138,7 @@ func FetchGitHubUser(username string) (*GitHubUser, error) {
 		return nil, fmt.Errorf("github user api returned status: %s", resp.Status)
 	}
 
-	var user GitHubUser
+	var user models.GitHubUser
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
 		return nil, err
 	}
@@ -170,7 +146,7 @@ func FetchGitHubUser(username string) (*GitHubUser, error) {
 	return &user, nil
 }
 
-func GetGitHubLanguageReport(username string) (*GitHubLanguageReport, error) {
+func GetGitHubLanguageReport(username string) (*models.GitHubLanguageReport, error) {
 	if strings.TrimSpace(username) == "" {
 		return nil, fmt.Errorf("username is required")
 	}
@@ -191,7 +167,7 @@ func GetGitHubLanguageReport(username string) (*GitHubLanguageReport, error) {
 		return nil, err
 	}
 
-	report := &GitHubLanguageReport{
+	report := &models.GitHubLanguageReport{
 		Username:  user.Login,
 		Name:      user.Name,
 		Email:     user.Email,
@@ -206,7 +182,7 @@ func GetGitHubLanguageReport(username string) (*GitHubLanguageReport, error) {
 	return normalizeGitHubLanguageReport(report), nil
 }
 
-func GetGitHubLanguageReportByIdentifier(username string, email string) (*GitHubLanguageReport, error) {
+func GetGitHubLanguageReportByIdentifier(username string, email string) (*models.GitHubLanguageReport, error) {
 	if strings.TrimSpace(username) != "" {
 		return GetGitHubLanguageReport(username)
 	}
@@ -257,7 +233,7 @@ func ResolveGitHubUsernameByEmail(email string) (string, error) {
 		return "", fmt.Errorf("github search api returned status: %s", resp.Status)
 	}
 
-	var result githubUserSearchResponse
+	var result models.GitHubUserSearchResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", err
 	}
@@ -269,7 +245,7 @@ func ResolveGitHubUsernameByEmail(email string) (string, error) {
 	return result.Items[0].Login, nil
 }
 
-func FetchGitHubReposByEmail(email string) (string, []Repo, error) {
+func FetchGitHubReposByEmail(email string) (string, []models.Repo, error) {
 	username, err := ResolveGitHubUsernameByEmail(email)
 	if err != nil {
 		return "", nil, err
@@ -293,7 +269,7 @@ func GetGitHubLanguageSummaryByEmail(email string) (string, map[string]int, erro
 }
 
 // ฟังก์ชันสำหรับวิเคราะห์ทักษะจาก repos ที่ได้รับ
-func AnalyzeSkills(repos []Repo) map[string]int {
+func AnalyzeSkills(repos []models.Repo) map[string]int {
 	// สร้างแผนที่เพื่อเก็บจำนวนครั้งที่แต่ละภาษาโปรแกรมถูกใช้ใน repos
 	skills := make(map[string]int)
 
