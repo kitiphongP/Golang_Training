@@ -37,7 +37,7 @@ func GetUserLanguagesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// เรียกใช้ฟังก์ชัน GetGitHubLanguageReportByIdentifier เพื่อดึงข้อมูลภาษาที่ผู้ใช้ถนัดจาก GitHub API
-	report, err := service.GetGitHubLanguageReportByIdentifier(username, email)
+	report, err := service.GetGitHubResponseByIdentifier(username, email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -64,8 +64,8 @@ func GetuserSkillHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// เรียกใช้ฟังก์ชัน GetGitHubLanguageReportByIdentifier เพื่อดึงข้อมูลภาษาที่ผู้ใช้ถนัดจาก GitHub API
-	report, err := service.GetGitHubLanguageReportByIdentifier(username, email)
+	// เรียกใช้ฟังก์ชัน GetGitHubResponseByIdentifier เพื่อดึงข้อมูลภาษาที่ผู้ใช้ถนัดจาก GitHub API
+	report, err := service.GetGitHubResponseByIdentifier(username, email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
