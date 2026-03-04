@@ -13,7 +13,7 @@ func main() {
 	mongoURI := "mongodb://localhost:27017/GoDB"
 	database.ConnectMongoDB(mongoURI,"GoDB")
 
-	port := ":8080"
+	port := ":4200"
 	r := route.Router()
 	
 	log.Println("Server is running on port", port)

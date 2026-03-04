@@ -8,8 +8,8 @@ import (
 func Router() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/github/skills", handlers.GetuserSkillHandler)
-	mux.HandleFunc("/github/languages", handlers.GetUserLanguagesHandler)
+	mux.HandleFunc("/api/github/skills", handlers.GetuserSkillHandler)
+	mux.HandleFunc("/api/github/languages", handlers.GetUserLanguagesHandler)
 
 	return mux
 }
